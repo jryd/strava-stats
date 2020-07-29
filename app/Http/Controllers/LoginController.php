@@ -9,7 +9,11 @@ class LoginController extends Controller
 {
     public function redirectToProvider()
     {
-        return Socialite::with('strava')->redirect();
+        return Socialite::with('strava')
+            ->scopes([
+                'activity:read',
+            ])
+            ->redirect();
     }
 
     public function handleCallback()
