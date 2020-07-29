@@ -34,6 +34,7 @@ class LoginTest extends TestCase
             'lastname' => 'McTest'
         ];
 
+        Socialite::shouldReceive('with')->andReturnSelf();
         Socialite::shouldReceive('redirect')->andReturn(redirect('https://strava.test',301));
         Socialite::shouldReceive('driver->user')->andReturn($this->user);
     }
