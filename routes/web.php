@@ -17,5 +17,5 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('login', 'LoginController@redirectToProvider');
-Route::get('login/callback', 'LoginController@handleCallback');
+Route::get('login', ['as' => 'login', 'uses' => 'LoginController@redirectToProvider']);
+Route::get('login/callback', ['as' => 'login.callback', 'uses' => 'LoginController@handleCallback']);
