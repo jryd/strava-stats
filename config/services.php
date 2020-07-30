@@ -33,7 +33,8 @@ return [
     'strava' => [
         'client_id' => env('STRAVA_KEY'),
         'client_secret' => env('STRAVA_SECRET'),
-        'redirect' => env('STRAVA_REDIRECT_URI')
+        'redirect' => env('STRAVA_REDIRECT_URI'),
+        'host' => env('STRAVA_HOST', 'https://www.strava.com/api/v3'),
     ],
 
 ];
