@@ -42,6 +42,7 @@ class LoginTest extends TestCase
     /** @test */
     public function it_redirects_you_to_strava_to_login()
     {
+        $this->withoutExceptionHandling();
         $this->get(route('login'))
             ->assertRedirect('https://strava.test');
     }
