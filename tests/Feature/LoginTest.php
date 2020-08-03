@@ -35,6 +35,7 @@ class LoginTest extends TestCase
         ];
 
         Socialite::shouldReceive('with')->andReturnSelf();
+        Socialite::shouldReceive('scopes')->andReturnSelf();
         Socialite::shouldReceive('redirect')->andReturn(redirect('https://strava.test',301));
         Socialite::shouldReceive('driver->user')->andReturn($this->user);
     }
@@ -42,7 +43,6 @@ class LoginTest extends TestCase
     /** @test */
     public function it_redirects_you_to_strava_to_login()
     {
-        $this->withoutExceptionHandling();
         $this->get(route('login'))
             ->assertRedirect('https://strava.test');
     }
