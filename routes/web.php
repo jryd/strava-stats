@@ -25,3 +25,8 @@ Route::get('webhooks/strava', [
     'uses' => 'StravaWebhookController',
     'middleware' => 'confirm.strava.subscription',
 ]);
+
+Route::post('webhooks/strava', [
+    'as' => 'webhooks.strava',
+    'uses' => 'StravaWebhookController',
+]);

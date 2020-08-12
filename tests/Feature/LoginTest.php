@@ -16,20 +16,18 @@ class LoginTest extends TestCase
 {
     use DatabaseMigrations;
 
-    private User $user;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->user = new User;
+        $user = new User;
 
-        $this->user->id = 1337;
-        $this->user->token = 'abc123';
-        $this->user->refreshToken = 'def456';
-        $this->user->expiresIn = 60;
-        $this->user->avatar = 'avatar.png';
-        $this->user->user = [
+        $user->id = 1337;
+        $user->token = 'abc123';
+        $user->refreshToken = 'def456';
+        $user->expiresIn = 60;
+        $user->avatar = 'avatar.png';
+        $user->user = [
             'firstname' => 'Test',
             'lastname' => 'McTest'
         ];
@@ -37,7 +35,7 @@ class LoginTest extends TestCase
         Socialite::shouldReceive('with')->andReturnSelf();
         Socialite::shouldReceive('scopes')->andReturnSelf();
         Socialite::shouldReceive('redirect')->andReturn(redirect('https://strava.test',301));
-        Socialite::shouldReceive('driver->user')->andReturn($this->user);
+        Socialite::shouldReceive('driver->user')->andReturn($user);
     }
 
     /** @test */
