@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -15,6 +16,9 @@ class StravaWebhookController extends Controller
      */
     public function __invoke(Request $request)
     {
-        Http::get("https://www.strava.com/api/v3/activities/{$request->input('object_id')}");
+        $user = User::where('social_id', $request->input('owner_id'))->firstOrFail();
+
+        Http::withToken($user->socialToken->active_token)
+            ->get("https://www.strava.com/api/v3/activities/{$request->input('object_id')}");
     }
 }
