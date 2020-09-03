@@ -8,6 +8,7 @@ use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AddWeatherToActivityTest extends TestCase
@@ -231,7 +232,42 @@ class AddWeatherToActivityTest extends TestCase
     /** @test */
     public function it_appends_the_weather_to_the_end_of_the_description_if_there_is_already_a_description_entered()
     {
+        now()->setTestNow(now());
 
+        Http::fake([
+            'api.darksky.net/*' => Http::response([
+                'currently' => [
+                    'summary' => 'Drizzle',
+                    'temperature' => 22.3,
+                    'apparentTemperature' => 23.5,
+                    'humidity' => 0.83,
+                    'windSpeed' => 8.74,
+                    'windBearing' => 246,
+                ]
+            ]),
+            '*' => Http::response([
+                'start_latitude' => 27.4698,
+                'start_longitude' => 153.0251,
+                'start_date' => now()->toW3cString(),
+                'description' => 'existing description',
+            ]),
+        ]);
+
+        $this->postJson(route('webhooks.strava'), [
+            'aspect_type' => 'create',
+            'event_time' => 1549560669,
+            'object_id' => 123456789,
+            'owner_id' => 1337,
+            'subscription_id' => 13579,
+            'object_type' => 'activity',
+        ])->assertSuccessful();
+
+        Http::assertSent(fn (Request $request) => $request->url() === 'https://www.strava.com/api/v3/activities/123456789' &&
+            $request->method() === 'PUT' &&
+            Str::contains($request['description'], 'existing description') &&
+            Str::contains($request['description'], '-----') &&
+            Str::contains($request['description'], 'Drizzle, 22.3°C, Feels like 23.5°C, Humidity 83%, Wind 8.74km/h from WSW')
+        );
     }
 
     /** @test */
