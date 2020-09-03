@@ -36,4 +36,8 @@ return [
         'redirect' => env('STRAVA_REDIRECT_URI'),
     ],
 
+    'darksky' => [
+        'key' => env('DARK_SKY_KEY')
+    ],
+
 ];
