@@ -20,7 +20,12 @@ class StravaWebhookController extends Controller
     {
         $user = User::where('social_id', $request->input('owner_id'))->firstOrFail();
 
-        abort_if($user->processedActivities()->where('activity_id', $request->input('object_id'))->exists(), 200);
+        abort_if(
+            $user->processedActivities()
+                ->where('activity_id', $request->input('object_id'))
+                ->exists(),
+            200
+        );
 
         $activity = Http::withToken($user->socialToken->active_token)
             ->get("https://www.strava.com/api/v3/activities/{$request->input('object_id')}")
@@ -49,19 +54,6 @@ class StravaWebhookController extends Controller
                     $windDirection->fromBearing($weather['currently']['windBearing']),
                 )
             ]);
-
-//        dd(sprintf(
-//            '%s%s, %s°C, Feels like %s°C, Humidity %s%%, Wind %skm/h from %s',
-//            $activity['description']
-//                ? "{$activity['description']}\n-----\n"
-//                : '',
-//            $weather['currently']['summary'],
-//            $weather['currently']['temperature'],
-//            $weather['currently']['apparentTemperature'],
-//            floatval($weather['currently']['humidity']) * 100,
-//            $weather['currently']['windSpeed'],
-//            $windDirection->fromBearing($weather['currently']['windBearing']),
-//        ));
 
         $user->processedActivities()
             ->create([

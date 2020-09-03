@@ -35,7 +35,7 @@ class AddWeatherToActivityTest extends TestCase
     /** @test */
     public function it_fetches_the_details_of_an_activity_when_a_new_activity_is_created()
     {
-        Http::fake();
+        $this->mockHttpClient();
 
         $this->postJson(route('webhooks.strava'), [
             'aspect_type' => 'create',
@@ -52,7 +52,7 @@ class AddWeatherToActivityTest extends TestCase
     /** @test */
     public function it_fetches_the_details_of_an_activity_when_an_activity_is_updated_if_we_have_not_processed_it_yet()
     {
-        Http::fake();
+        $this->mockHttpClient();
 
         $this->postJson(route('webhooks.strava'), [
             'aspect_type' => 'update',
@@ -69,7 +69,7 @@ class AddWeatherToActivityTest extends TestCase
     /** @test */
     public function it_uses_the_users_social_token_as_a_bearer_token()
     {
-        Http::fake();
+        $this->mockHttpClient();
 
         $this->postJson(route('webhooks.strava'), [
             'aspect_type' => 'create',
@@ -86,16 +86,7 @@ class AddWeatherToActivityTest extends TestCase
     /** @test */
     public function it_will_refresh_the_social_token_if_it_has_expired()
     {
-        Http::fake([
-            'https://www.strava.com/oauth/token' => Http::response([
-                "token_type" => "Bearer",
-                "access_token" => "abc123",
-                "expires_at" => 1568775134,
-                "expires_in" => 20566,
-                "refresh_token" => "def456"
-            ]),
-            '*' => Http::response(),
-        ]);
+        $this->mockHttpClient();
 
         $this->token->update([
             'expires_at' => now()->subMinute(),
@@ -120,7 +111,7 @@ class AddWeatherToActivityTest extends TestCase
     /** @test */
     public function it_ignores_updates_to_activities_if_we_have_already_processed_it()
     {
-        Http::fake();
+        $this->mockHttpClient();
 
         factory(ProcessedActivity::class)->create([
             'user_id' => $this->user->id,
@@ -142,7 +133,7 @@ class AddWeatherToActivityTest extends TestCase
     /** @test */
     public function it_stores_the_activity_in_the_processed_activities_table()
     {
-        Http::fake();
+        $this->mockHttpClient();
 
         $this->postJson(route('webhooks.strava'), [
             'aspect_type' => 'create',
@@ -164,14 +155,7 @@ class AddWeatherToActivityTest extends TestCase
     {
         now()->setTestNow(now());
 
-        Http::fake([
-            'api.darksky.net/*' => Http::response([]),
-            '*' => Http::response([
-                'start_latitude' => 27.4698,
-                'start_longitude' => 153.0251,
-                'start_date' => now()->toW3cString(),
-            ]),
-        ]);
+        $this->mockHttpClient();
 
         $this->postJson(route('webhooks.strava'), [
             'aspect_type' => 'create',
@@ -183,7 +167,7 @@ class AddWeatherToActivityTest extends TestCase
         ])->assertSuccessful();
 
         Http::assertSent(fn (Request $request) => $request->url() === sprintf(
-            'https://api.darksky.net/forecast/%s/%s,%s,%s',
+            'https://api.darksky.net/forecast/%s/%s,%s,%s?units=ca',
             config('services.darksky.key'),
             27.4698,
             153.0251,
@@ -196,23 +180,7 @@ class AddWeatherToActivityTest extends TestCase
     {
         now()->setTestNow(now());
 
-        Http::fake([
-            'api.darksky.net/*' => Http::response([
-                'currently' => [
-                    'summary' => 'Drizzle',
-                    'temperature' => 22.3,
-                    'apparentTemperature' => 23.5,
-                    'humidity' => 0.83,
-                    'windSpeed' => 8.74,
-                    'windBearing' => 246,
-                ]
-            ]),
-            '*' => Http::response([
-                'start_latitude' => 27.4698,
-                'start_longitude' => 153.0251,
-                'start_date' => now()->toW3cString(),
-            ]),
-        ]);
+        $this->mockHttpClient();
 
         $this->postJson(route('webhooks.strava'), [
             'aspect_type' => 'create',
@@ -234,17 +202,7 @@ class AddWeatherToActivityTest extends TestCase
     {
         now()->setTestNow(now());
 
-        Http::fake([
-            'api.darksky.net/*' => Http::response([
-                'currently' => [
-                    'summary' => 'Drizzle',
-                    'temperature' => 22.3,
-                    'apparentTemperature' => 23.5,
-                    'humidity' => 0.83,
-                    'windSpeed' => 8.74,
-                    'windBearing' => 246,
-                ]
-            ]),
+        $this->mockHttpClient([
             '*' => Http::response([
                 'start_latitude' => 27.4698,
                 'start_longitude' => 153.0251,
@@ -270,9 +228,32 @@ class AddWeatherToActivityTest extends TestCase
         );
     }
 
-    /** @test */
-    public function it_ignores_athlete_updates()
+    private function mockHttpClient($responses = [])
     {
-
+        Http::fake(array_merge([
+            'https://www.strava.com/oauth/token' => Http::response([
+                "token_type" => "Bearer",
+                "access_token" => "abc123",
+                "expires_at" => 1568775134,
+                "expires_in" => 20566,
+                "refresh_token" => "def456"
+            ]),
+            'api.darksky.net/*' => Http::response([
+                'currently' => [
+                    'summary' => 'Drizzle',
+                    'temperature' => 22.3,
+                    'apparentTemperature' => 23.5,
+                    'humidity' => 0.83,
+                    'windSpeed' => 8.74,
+                    'windBearing' => 246,
+                ]
+            ]),
+            '*' => Http::response([
+                'start_latitude' => 27.4698,
+                'start_longitude' => 153.0251,
+                'start_date' => now()->toW3cString(),
+                'description' => '',
+            ]),
+        ], $responses));
     }
 }
