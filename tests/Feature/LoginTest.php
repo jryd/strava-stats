@@ -5,10 +5,6 @@ namespace Tests\Feature;
 use App\SocialToken;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Socialite\Facades\Socialite;
-
-
-
-
 use SocialiteProviders\Manager\OAuth2\User;
 use Tests\TestCase;
 
@@ -34,9 +30,10 @@ class LoginTest extends TestCase
             'lastname' => 'McTest'
         ];
 
-        Socialite::shouldReceive('with')->andReturnSelf();
-        Socialite::shouldReceive('redirect')->andReturn(redirect('https://strava.test',301));
-        Socialite::shouldReceive('driver->user')->andReturn($this->user);
+        Socialite::shouldReceive('with->scopes->redirect')
+            ->andReturn(redirect('https://strava.test',301));
+        Socialite::shouldReceive('driver->user')
+            ->andReturn($this->user);
     }
 
     /** @test */
