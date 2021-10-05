@@ -35,4 +35,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(SocialToken::class);
     }
+
+    public function processedActivities()
+    {
+        return $this->hasMany(ProcessedActivity::class);
+    }
 }

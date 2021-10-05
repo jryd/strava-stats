@@ -33,7 +33,11 @@ return [
     'strava' => [
         'client_id' => env('STRAVA_KEY'),
         'client_secret' => env('STRAVA_SECRET'),
-        'redirect' => env('STRAVA_REDIRECT_URI')
+        'redirect' => env('STRAVA_REDIRECT_URI'),
+    ],
+
+    'darksky' => [
+        'key' => env('DARK_SKY_KEY')
     ],
 
 ];

@@ -19,3 +19,14 @@ Route::get('/', function () {
 
 Route::get('login', ['as' => 'login', 'uses' => 'LoginController@redirectToProvider']);
 Route::get('login/callback', ['as' => 'login.callback', 'uses' => 'LoginController@handleCallback']);
+
+Route::get('webhooks/strava', [
+    'as' => 'webhooks.strava',
+    'uses' => 'StravaWebhookController',
+    'middleware' => 'confirm.strava.subscription',
+]);
+
+Route::post('webhooks/strava', [
+    'as' => 'webhooks.strava',
+    'uses' => 'StravaWebhookController',
+]);
