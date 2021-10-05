@@ -3,26 +3,23 @@
 namespace Tests\Feature;
 
 use App\SocialToken;
+use App\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Socialite\Facades\Socialite;
-
-
-
-
-use SocialiteProviders\Manager\OAuth2\User;
+use SocialiteProviders\Manager\OAuth2\User as OAuthUser;
 use Tests\TestCase;
 
 class LoginTest extends TestCase
 {
     use DatabaseMigrations;
 
-    private User $user;
+    private OAuthUser $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->user = new User;
+        $this->user = new OAuthUser;
 
         $this->user->id = 1337;
         $this->user->token = 'abc123';
@@ -34,9 +31,10 @@ class LoginTest extends TestCase
             'lastname' => 'McTest'
         ];
 
-        Socialite::shouldReceive('with')->andReturnSelf();
-        Socialite::shouldReceive('redirect')->andReturn(redirect('https://strava.test',301));
-        Socialite::shouldReceive('driver->user')->andReturn($this->user);
+        Socialite::shouldReceive('with->scopes->redirect')
+            ->andReturn(redirect('https://strava.test',301));
+        Socialite::shouldReceive('driver->user')
+            ->andReturn($this->user);
     }
 
     /** @test */
@@ -68,13 +66,15 @@ class LoginTest extends TestCase
     /** @test */
     public function it_updates_an_existing_user_from_strava()
     {
-        $user = factory(\App\User::class)->create([
-            'social_id' => 1337,
-        ]);
+        $user = User::factory()
+            ->create([
+                'social_id' => 1337,
+            ]);
 
-        $token = factory(SocialToken::class)->create([
-            'user_id' => $user->id,
-        ]);
+        $token = SocialToken::factory()
+            ->create([
+                'user_id' => $user->id,
+            ]);
 
         $this->assertNotEquals('Test', $user->first_name);
         $this->assertNotEquals('abc123', $token->token);
