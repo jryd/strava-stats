@@ -23,13 +23,15 @@ class AddWeatherToActivityTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = factory(User::class)->create([
-            'social_id' => 1337,
-        ]);
+        $this->user = User::factory()
+            ->create([
+                'social_id' => 1337,
+            ]);
 
-        $this->token = factory(SocialToken::class)->create([
-            'user_id' => $this->user->id,
-        ]);
+        $this->token = SocialToken::factory()
+            ->create([
+                'user_id' => $this->user->id,
+            ]);
     }
 
     /** @test */
@@ -113,10 +115,11 @@ class AddWeatherToActivityTest extends TestCase
     {
         $this->mockHttpClient();
 
-        factory(ProcessedActivity::class)->create([
-            'user_id' => $this->user->id,
-            'activity_id' => 123456789,
-        ]);
+        ProcessedActivity::factory()
+            ->create([
+                'user_id' => $this->user->id,
+                'activity_id' => 123456789,
+            ]);
 
         $this->postJson(route('webhooks.strava'), [
             'aspect_type' => 'update',
