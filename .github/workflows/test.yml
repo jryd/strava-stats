@@ -12,5 +12,13 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 7.4
-      - name: Run PHPUnit
-        uses: nathanheffley/laravel-phpunit-action@master
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      - name: Prepare the application
+        run: |
+          php -r "file_exists('.env') || copy('.env.example', '.env');"
+          php artisan key:generate
+      - name: Clear Config
+        run: php artisan config:clear
+      - name: Test with phpunit
+        run: vendor/bin/phpunit
