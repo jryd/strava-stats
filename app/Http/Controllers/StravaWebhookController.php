@@ -33,21 +33,20 @@ class StravaWebhookController extends Controller
 
         $activityWeather = $weather->for($activity);
 
-        Http::withToken($user->socialToken->active_token)
-            ->put("https://www.strava.com/api/v3/activities/{$request->input('object_id')}", [
-                'description' => sprintf(
-                    '%s%s, %s°C, Feels like %s°C, Humidity %s%%, Wind %skm/h from %s',
-                    $activity['description']
-                        ? "{$activity['description']}\n-----\n"
-                        : '',
-                    $activityWeather['currently']['summary'],
-                    $activityWeather['currently']['temperature'],
-                    $activityWeather['currently']['apparentTemperature'],
-                    floatval($activityWeather['currently']['humidity']) * 100,
-                    $activityWeather['currently']['windSpeed'],
-                    $windDirection->fromBearing($activityWeather['currently']['windBearing']),
-                )
-            ]);
+        $stravaActivity->update($request->input('object_id'), [
+            'description' => sprintf(
+                '%s%s, %s°C, Feels like %s°C, Humidity %s%%, Wind %skm/h from %s',
+                $activity['description']
+                    ? "{$activity['description']}\n-----\n"
+                    : '',
+                $activityWeather['currently']['summary'],
+                $activityWeather['currently']['temperature'],
+                $activityWeather['currently']['apparentTemperature'],
+                floatval($activityWeather['currently']['humidity']) * 100,
+                $activityWeather['currently']['windSpeed'],
+                $windDirection->fromBearing($activityWeather['currently']['windBearing']),
+            )
+        ]);
 
         $user->processedActivities()
             ->create([
