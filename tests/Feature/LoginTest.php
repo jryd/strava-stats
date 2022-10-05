@@ -103,13 +103,13 @@ class LoginTest extends TestCase
     /** @test */
     public function it_sets_the_expires_at_timestamp_as_seconds_from_now()
     {
-        now()->setTestNow(now());
+        $this->freezeTime();
 
         $this->get(route('login.callback'))
             ->assertSuccessful();
 
         $token = SocialToken::first();
 
-        $this->assertTrue(now()->addSeconds(60)->eq($token->expires_at));
+        $this->assertEquals(now()->addSeconds(60)->toDateTimeString(), $token->expires_at);
     }
 }
