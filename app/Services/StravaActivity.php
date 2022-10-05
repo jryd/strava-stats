@@ -22,4 +22,12 @@ class StravaActivity
             ->get("https://www.strava.com/api/v3/activities/{$activityId}")
             ->json();
     }
+
+    public function update(string $activityId, array $data)
+    {
+        return Http::withToken($this->user->socialToken->active_token)
+            ->put("https://www.strava.com/api/v3/activities/{$activityId}", $data)
+            ->json();
+
+    }
 }
