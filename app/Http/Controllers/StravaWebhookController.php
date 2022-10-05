@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\ProcessedActivity;
+use App\Services\StravaActivity;
 use App\Services\WindDirection;
 use App\User;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class StravaWebhookController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function __invoke(Request $request, WindDirection $windDirection)
+    public function __invoke(Request $request, WindDirection $windDirection, StravaActivity $stravaActivity)
     {
         $user = User::where('social_id', $request->input('owner_id'))->firstOrFail();
 
@@ -27,9 +28,8 @@ class StravaWebhookController extends Controller
             200
         );
 
-        $activity = Http::withToken($user->socialToken->active_token)
-            ->get("https://www.strava.com/api/v3/activities/{$request->input('object_id')}")
-            ->json();
+        $activity = $stravaActivity->for($user)
+            ->get($request->input('object_id'));
 
         $weather = Http::get(sprintf(
             'https://api.darksky.net/forecast/%s/%s,%s,%s?units=ca',
