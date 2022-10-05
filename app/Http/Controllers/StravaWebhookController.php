@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\ProcessedActivity;
 use App\Services\StravaActivity;
+use App\Services\Weather;
 use App\Services\WindDirection;
 use App\User;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ class StravaWebhookController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function __invoke(Request $request, WindDirection $windDirection, StravaActivity $stravaActivity)
+    public function __invoke(Request $request, WindDirection $windDirection, StravaActivity $stravaActivity, Weather $weather)
     {
         $user = User::where('social_id', $request->input('owner_id'))->firstOrFail();
 
@@ -31,13 +31,7 @@ class StravaWebhookController extends Controller
         $activity = $stravaActivity->for($user)
             ->get($request->input('object_id'));
 
-        $weather = Http::get(sprintf(
-            'https://api.darksky.net/forecast/%s/%s,%s,%s?units=ca',
-            config('services.darksky.key'),
-            $activity['start_latitude'],
-            $activity['start_longitude'],
-            now()->parse($activity['start_date'])->timestamp,
-        ))->json();
+        $activityWeather = $weather->for($activity);
 
         Http::withToken($user->socialToken->active_token)
             ->put("https://www.strava.com/api/v3/activities/{$request->input('object_id')}", [
@@ -46,12 +40,12 @@ class StravaWebhookController extends Controller
                     $activity['description']
                         ? "{$activity['description']}\n-----\n"
                         : '',
-                    $weather['currently']['summary'],
-                    $weather['currently']['temperature'],
-                    $weather['currently']['apparentTemperature'],
-                    floatval($weather['currently']['humidity']) * 100,
-                    $weather['currently']['windSpeed'],
-                    $windDirection->fromBearing($weather['currently']['windBearing']),
+                    $activityWeather['currently']['summary'],
+                    $activityWeather['currently']['temperature'],
+                    $activityWeather['currently']['apparentTemperature'],
+                    floatval($activityWeather['currently']['humidity']) * 100,
+                    $activityWeather['currently']['windSpeed'],
+                    $windDirection->fromBearing($activityWeather['currently']['windBearing']),
                 )
             ]);
 
