@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTO\Activity;
 use App\User;
 use Illuminate\Support\Facades\Http;
 
@@ -18,9 +19,11 @@ class StravaActivity
 
     public function get(string $activityId)
     {
-        return Http::withToken($this->user->socialToken->active_token)
-            ->get("https://www.strava.com/api/v3/activities/{$activityId}")
-            ->json();
+        return new Activity(
+            Http::withToken($this->user->socialToken->active_token)
+                ->get("https://www.strava.com/api/v3/activities/{$activityId}")
+                ->json()
+        );
     }
 
     public function update(string $activityId, array $data)
