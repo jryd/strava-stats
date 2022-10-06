@@ -31,20 +31,20 @@ class StravaWebhookController extends Controller
         $activity = $stravaActivity->for($user)
             ->get($request->input('object_id'));
 
-        $activityWeather = $weather->for($activity);
+        $forecast = $weather->for($activity);
 
         $stravaActivity->update($request->input('object_id'), [
             'description' => sprintf(
                 '%s%s, %s°C, Feels like %s°C, Humidity %s%%, Wind %skm/h from %s',
-                $activity['description']
-                    ? "{$activity['description']}\n-----\n"
+                $activity->description
+                    ? "{$activity->description}\n-----\n"
                     : '',
-                $activityWeather['currently']['summary'],
-                $activityWeather['currently']['temperature'],
-                $activityWeather['currently']['apparentTemperature'],
-                floatval($activityWeather['currently']['humidity']) * 100,
-                $activityWeather['currently']['windSpeed'],
-                $windDirection->fromBearing($activityWeather['currently']['windBearing']),
+                $forecast->currently->summary,
+                $forecast->currently->temperature,
+                $forecast->currently->apparentTemperature,
+                $forecast->currently->humidity * 100,
+                $forecast->currently->windSpeed,
+                $windDirection->fromBearing($forecast->currently->windBearing),
             )
         ]);
 
