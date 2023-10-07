@@ -16,7 +16,7 @@ class WindDirectionTest extends TestCase
         $this->assertEquals($direction, (new WindDirection())->fromBearing($bearing));
     }
 
-    public function bearings()
+    public static function bearings()
     {
         return [
             'Under the closest' => [
